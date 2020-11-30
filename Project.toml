@@ -2,3 +2,7 @@ name = "QuantumOpticalCircuits"
 uuid = "83ed5d67-5d37-4206-9503-909fa450860a"
 authors = ["Xavier Valcarce <xvalcarce@protonmail.ch>"]
 version = "0.1.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+QuantumOptics = "6e0679c1-51ea-5a7c-ac74-d61b76210b0c"
