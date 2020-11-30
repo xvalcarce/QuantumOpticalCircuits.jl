@@ -15,8 +15,6 @@ include("states_gaussian.jl")
 include("states_fock.jl")
 
 abstract type Gate end
-const GateArray{T<:Gate} = Array{Gate}
-
 include("opticaldevices.jl")
 include("measures.jl")
 
