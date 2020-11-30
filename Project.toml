@@ -1,0 +1,4 @@
+name = "QuantumOpticalCircuits"
+uuid = "83ed5d67-5d37-4206-9503-909fa450860a"
+authors = ["Xavier Valcarce <xvalcarce@protonmail.ch>"]
+version = "0.1.0"
