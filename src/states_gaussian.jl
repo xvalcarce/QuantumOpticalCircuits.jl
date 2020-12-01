@@ -6,7 +6,7 @@ mutable struct GaussianState <: State
 	σ::Array{Complex{Float64},2}
 end
 
-vacuum_gaussian(modes::Int) = GaussianState(complex(zeros(2modes)),Matrix{Complex{Float64}}(I,2modes,2modes))
+vacuum_gaussian(modes::Int) = GaussianState(complex(zeros(2modes)),(1/4)Matrix{Complex{Float64}}(I,2modes,2modes))
 
 # Utilities
 
@@ -18,7 +18,7 @@ function copy(state::GaussianState)
 end
 
 function M_matrix(state::GaussianState)
-	m = 4inv(state.σ)
+	m = inv(state.σ)
 	return m
 end
 

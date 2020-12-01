@@ -6,7 +6,7 @@ function p_noclick(state::GaussianState,mode::Int,η::Float64)
 	F = zeros(size(M)...)
 	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-η)/(1+η))*Matrix{Float64}(I,2,2)
 	p_nc = (2*√(det(M)))/((1+η)*√(det(M+F)))
-	p_nc *= exp(-.5*d'*M*d+.5*d'*M*inv(M+F)*M*d)
+	p_nc *= exp(-.5*d'*(M-M*inv(M+F)*M)*d)
 	p_nc = real(p_nc)
 	return p_nc
 end
@@ -20,8 +20,8 @@ function p_noclick!(state::GaussianState,mode::Int,η::Float64)
 	p_nc *= exp(-.5*d'*M*d+.5*d'*M*inv(M+F)*M*d)
 	p_nc = real(p_nc)
 	σ_inv = inv(state.σ)
-	d_ = inv(σ_inv+F/4.0)*σ_inv*state.d
-	σ_ = inv(σ_inv+(F/4.0))
+	d_ = inv(σ_inv+F)*σ_inv*state.d
+	σ_ = inv(σ_inv+F)
 	state.d = d_
 	state.σ = σ_
 	trace_mode!(state,mode)
