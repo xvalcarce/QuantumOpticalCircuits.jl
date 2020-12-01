@@ -21,6 +21,7 @@ function p_noclick!(state::FockState,mode::Int,η::Float64)
 	p_nc = abs(real(tr(ρ_)))
 	ρ_ /= tr(ρ_)
 	state.ρ = ptrace(ρ_,mode)
+	state.n_mode -= 1
 	return p_nc
 end
 
