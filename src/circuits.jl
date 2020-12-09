@@ -11,6 +11,7 @@ mutable struct Circuit
 end
 
 GaussianCircuit(modes::Int) = Circuit(modes,vacuum_gaussian(modes))
+PseudoGaussianCircuit(modes::Int) = Circuit(modes,vacuum_pseudogaussian(modes))
 FockCircuit(modes::Int,cutoff::Int) = Circuit(modes,vacuum_fock(modes,cutoff))
 
 function add_gate!(circuit::Circuit,gate::Gate)

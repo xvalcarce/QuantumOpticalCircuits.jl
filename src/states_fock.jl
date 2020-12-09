@@ -1,4 +1,5 @@
-import QuantumOptics: FockBasis, coherentstate, tensor, Ket, Operator
+import Base: copy
+import QuantumOptics: FockBasis, coherentstate, tensor, Ket, Operator, ptrace
 
 mutable struct FockState <: State
 	n_mode::Int
@@ -20,4 +21,14 @@ function copy(state::FockState)
 	state_ = FockState(state.n_mode,state.cutoff_dim)
 	state_.ρ = ρ_
 	return state_
+end
+
+function ptrace!(state::FockState,mode::Int)
+	state.ρ = ptrace(state.ρ,mode)
+	state.n_mode -= 1
+end
+
+function ptrace!(state::FockState,mode::Vector{Int})
+	state.ρ = ptrace(state.ρ,mode)
+	state.n_mode -= length(mode)
 end

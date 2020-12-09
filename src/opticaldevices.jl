@@ -10,10 +10,12 @@ include("opticaldevices_fock.jl")
 PS(mode::Int,param::Float64) = OpticalDevice(mode,param,ps)
 
 SMS(mode::Int,param::Complex) = OpticalDevice(mode,param,sms)
+SMS(mode::Int,param::Float64) = OpticalDevice(mode,param,sms_re)
 SMS_Re(mode::Int,param::Float64) = OpticalDevice(mode,param,sms_re)
 SMS_Im(mode::Int,param::Float64) = OpticalDevice(mode,param,sms_im)
 
 D(mode::Int,param::Complex) = OpticalDevice(mode,param,disp)
+D(mode::Int,param::Float64) = OpticalDevice(mode,param,disp_re)
 D_Re(mode::Int,param::Float64) = OpticalDevice(mode,param,disp_re)
 D_Im(mode::Int,param::Float64) = OpticalDevice(mode,param,disp_im)
 

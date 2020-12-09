@@ -6,7 +6,15 @@ mutable struct GaussianState <: State
 	σ::Array{Complex{Float64},2}
 end
 
+mutable struct PseudoGaussianState <: State
+	prob::Vector{Float64}
+	states::Vector{GaussianState}
+end
+
+PseudoGaussianState(state::GaussianState) = PseudoGaussianState([1.0],[state])
+
 vacuum_gaussian(modes::Int) = GaussianState(complex(zeros(2modes)),(1/4)Matrix{Complex{Float64}}(I,2modes,2modes))
+vacuum_pseudogaussian(modes::Int) = PseudoGaussianState([1.0],[vacuum_gaussian(modes)])
 
 # Utilities
 
@@ -17,6 +25,12 @@ function copy(state::GaussianState)
 	return state_
 end
 
+function copy(state::PseudoGaussianState)
+	prob_ = copy(state.prob)
+	states_ = [copy(s) for s in state.states]
+	state_ = PseudoGaussianState(prob_,states_)
+end
+
 function M_matrix(state::GaussianState)
 	m = inv(state.σ)
 	return m
@@ -24,13 +38,20 @@ end
 
 # Operations on state
 
-function trace_mode!(state::GaussianState,mode::Int)
+function ptrace!(state::GaussianState,mode::Int)
 	idx = 2mode
 	deleteat!(state.d,[idx-1,idx])
 	# hacky and resource heavy TODO
 	σ_ = [state.σ[1:idx-2,1:idx-2] state.σ[1:idx-2,idx+1:end]
 		  state.σ[idx+1:end,1:idx-2] state.σ[idx+1:end,idx+1:end]]
 	state.σ = σ_
+end
+
+function ptrace!(state::GaussianState,mode::Vector{Int})
+	for m in mode
+		ptrace!(state,m)
+		mode .-=1
+	end
 end
 
 # Extract functions 1 and 2 mode decoupled from n -> for performance, we avoid to create enumerator this way
