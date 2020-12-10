@@ -69,7 +69,7 @@ function apply(od::OpticalDevice,state::GaussianState)
 		σ = state.σ
 	else
 		dg = collect(1:length(state.d))
-		r = sparse(dg,dg,1.0+0.0*im)
+		r = sparse(dg,dg,1.0)
 		r_ = od.optdev(od.param)
 		if typeof(od.mode) == Int
 			r[2od.mode-1:2od.mode,2od.mode-1:2od.mode] = r_
@@ -99,7 +99,7 @@ function apply!(od::OpticalDevice,state::GaussianState)
 		state.d = od.optdev(od.param,state.d,od.mode)
 	else	
 		dg = collect(1:length(state.d))
-		r = sparse(dg,dg,1.0+0.0*im)
+		r = sparse(dg,dg,1.0)
 		r_ = od.optdev(od.param)
 		if typeof(od.mode) == Int
 			r[2od.mode-1:2od.mode,2od.mode-1:2od.mode] = r_
