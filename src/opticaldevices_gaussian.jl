@@ -1,4 +1,4 @@
-import LinearAlgebra: I
+import SparseArrays: sparse
 
 function ps(ϕ::Float64)
 	r = [cos(ϕ) sin(ϕ)
@@ -68,8 +68,8 @@ function apply(od::OpticalDevice,state::GaussianState)
 		d = od.optdev(od.param,state.d,od.mode)	
 		σ = state.σ
 	else
-		#TODO: use SparseArray
-		r = Matrix{Complex}(I,size(state.σ))
+		dg = collect(1:length(state.d))
+		r = sparse(dg,dg,1.0+0.0*im)
 		r_ = od.optdev(od.param)
 		if typeof(od.mode) == Int
 			r[2od.mode-1:2od.mode,2od.mode-1:2od.mode] = r_
@@ -98,8 +98,8 @@ function apply!(od::OpticalDevice,state::GaussianState)
 	if od.optdev ∈ [disp,disp_re,disp_im]
 		state.d = od.optdev(od.param,state.d,od.mode)
 	else	
-		#TODO: use SparseArray
-		r = Matrix{Complex}(I,size(state.σ))
+		dg = collect(1:length(state.d))
+		r = sparse(dg,dg,1.0+0.0*im)
 		r_ = od.optdev(od.param)
 		if typeof(od.mode) == Int
 			r[2od.mode-1:2od.mode,2od.mode-1:2od.mode] = r_
