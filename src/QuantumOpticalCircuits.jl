@@ -7,9 +7,9 @@ export State,
 	OpticalDevice, apply, apply!,
 	PS, SMS, SMS_Re, SMS_Im, D, D_Re, D_Im, TMS, BS,
 	Measure, correlator, 
-	PhotonDetection, Heralding,
+	PhotonDetector, Heralding,
 	Circuit, FockCircuit, GaussianCircuit, PseudoGaussianCircuit,
-	add_gate!, compute, compute!
+	add_gate!, compute, compute!, print
 
 include("states.jl")
 
