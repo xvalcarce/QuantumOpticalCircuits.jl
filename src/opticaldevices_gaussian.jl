@@ -71,33 +71,8 @@ function swap()
 end
 
 function apply(od::OpticalDevice,state::GaussianState)
-	if od.optdev ∈ [disp,disp_re,disp_im]
-		d = od.optdev(od.param,state.d,od.mode)	
-		σ = state.σ
-	else
-		dg = collect(1:length(state.d))
-		r = sparse(dg,dg,1.0)
-		r_ = od.optdev(od.param)
-		if typeof(od.mode) == Int
-			r[2od.mode-1:2od.mode,2od.mode-1:2od.mode] = r_
-		elseif length(od.mode) == 2
-			if od.mode[2]-od.mode[1]==1
-				r[2od.mode[1]-1:2od.mode[2],2od.mode[1]-1:2od.mode[2]] = r_
-			else
-				# Ensuring full connectivity
-				for (idx,i) in enumerate(od.mode)
-					for (jdx,j) in enumerate(od.mode)
-						r[2i-1:2i,2j-1:2j] = r_[2idx-1:2idx,2jdx-1:2jdx]
-					end
-				end
-			end
-		else
-			throw("2+ mode operation are not implemented")
-		end
-		d = r*state.d
-		σ = r*state.σ*r'
-	end
-	state_ = GaussianState(d,σ)
+	state_ = copy(state)
+	apply!(od,state_)
 	return state_
 end
 

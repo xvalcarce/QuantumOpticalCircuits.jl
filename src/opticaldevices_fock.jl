@@ -1,4 +1,4 @@
-import QuantumOptics: create, destroy, identityoperator, tensor, dense, displace, dagger
+import QuantumOptics: create, destroy, identityoperator, tensor, dense, displace, dagger, SparseOperator
 
 function ps(ϕ::Float64,dim::FockBasis)
     x = -ϕ*im*number(dim)
@@ -37,17 +37,40 @@ function bs(θ::Float64,dim::FockBasis)
     return op
 end
 
+function swap(dim::FockBasis)
+	op = sparse(bs(π/2,dim))
+	return op
+end
+
 function apply(od::OpticalDevice,state::FockState)
 	idd = identityoperator(state.dim)
 	if typeof(od.mode) == Int
 		mode1,mode2 = [od.mode,od.mode]
-	else
+		Δmode = 1
+	elseif length(od.mode) == 2
 		mode1,mode2 = od.mode
+		Δmode = abs(mode2-mode1)
+	else
+		throw(">2 modes operations are not implemented")
 	end
-	up = mode1 == 1 ? () : (idd for i in 1:(mode1-1))
-	down = mode2 == state.n_mode ? () : (idd for i in 1:(state.n_mode-mode2))
 	gate = od.optdev(od.param,state.dim)
-	gate_ = tensor(up...,gate,down...)
+	if Δmode == 1
+		up = mode1 == 1 ? () : (idd for i in 1:(mode1-1))
+		down = mode2 == state.n_mode ? () : (idd for i in 1:(state.n_mode-mode2))
+		gate_ = tensor(up...,gate,down...)
+	else
+		gate_ = tensor(gate,(idd for i in Δmode-1)...)
+		swaps = Vector{Operator}()
+		swap_ = swap(state.dim)
+		dom,upm = od.mode[2]>od.mode[1] ? od.mode : sort(od.mode) 
+		for m in 1:Δmode-1
+			up_ = (idd for i in 1:Δmode-m)
+			down_ = (idd for i in 1:(m-1))
+			s = tensor(up_...,swap_,down_...)
+			push!(swaps,s)
+		end
+		gate_ = *(swaps...,gate_,reverse(swaps)...)
+	end
 	if isa(state.ρ, Ket)
 		return gate_*state.ρ
 	else
