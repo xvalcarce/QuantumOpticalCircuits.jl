@@ -1,7 +1,7 @@
-import QuantumOptics: create, destroy, identityoperator, tensor, dense, displace, dagger, SparseOperator
+import QuantumOptics: create, destroy, number, identityoperator, tensor, dense, displace, dagger, SparseOperator
 
 function ps(ϕ::Float64,dim::FockBasis)
-    x = -ϕ*im*number(dim)
+    x = ϕ*im*number(dim)
     op = exp(dense(x))
     return op
 end

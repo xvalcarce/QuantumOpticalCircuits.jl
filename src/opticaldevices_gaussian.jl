@@ -1,8 +1,8 @@
 import SparseArrays: SparseMatrixCSC, sparse
 
 function ps(ϕ::Float64)
-	r = [cos(ϕ) sin(ϕ)
-		 -sin(ϕ) cos(ϕ)]
+	r = [cos(ϕ) -sin(ϕ)
+		 sin(ϕ) cos(ϕ)]
 	return r
 end
 
