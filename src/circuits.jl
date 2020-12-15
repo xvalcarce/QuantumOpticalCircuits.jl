@@ -111,7 +111,7 @@ function print(cir::Circuit)
 			end
 			asciir[act[1]] *= "┌───┐" 
 			asciir[act[end]] *= "└───┘"
-			if g.optdev == bs
+			if g.optdev ∈ [bs,swap]
 				gate_ascii = bs_ascii
 			elseif g.optdev == tms
 				gate_ascii = tms_ascii

@@ -22,3 +22,4 @@ D_Im(mode::Int,param::Float64) = OpticalDevice(mode,param,disp_im)
 TMS(mode::Array{Int,1},param::Float64) = OpticalDevice(mode,param,tms)
 
 BS(mode::Array{Int,1},param::Float64) = OpticalDevice(mode,param,bs)
+SWAP(mode::Array{Int,1}) = OpticalDevice(mode,swap)
