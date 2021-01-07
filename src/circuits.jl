@@ -1,4 +1,4 @@
-import Base: print
+import Base: print,show
 
 mutable struct Circuit
 	modes::Int
@@ -150,3 +150,5 @@ function print(cir::Circuit)
 	end
 	return asciir
 end
+
+Base.show(io::IO,cir::Circuit) = display(print(cir))
