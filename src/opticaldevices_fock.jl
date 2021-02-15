@@ -1,20 +1,30 @@
 import QuantumOptics: create, destroy, number, identityoperator, tensor, dense, displace, dagger, SparseOperator
 
+# Single-mode optical devices
+
+# Phase-shifter
 function ps(ϕ::Float64,dim::FockBasis)
     x = ϕ*im*number(dim)
     op = exp(dense(x))
     return op
 end
 
-function sms(g::Complex,dim::FockBasis)
-    x = .5*(conj(g)*(destroy(dim)^2)-g*(create(dim)^2))
+# Single-mode squeezer
+function sms(z::Complex,dim::FockBasis)
+    x = .5*(conj(z)*(destroy(dim)^2)-z*(create(dim)^2))
     op = exp(dense(x))
     return op
+end
+
+function sms(r::Float64,ϕ::Float64,dim::FockBasis)
+	z = r*exp(ϕ*im)
+	op = sms(z,dim)
 end
 
 sms_re(g::Float64,dim::FockBasis) = sms(Complex(g),dim)
 sms_im(g::Float64,dim::FockBasis) = sms(g*im,dim)
 
+# Displacement
 function disp(α::Complex,dim::FockBasis)
     op = displace(dim,α)
     return op
@@ -23,13 +33,17 @@ end
 disp_re(α::Float64,dim::FockBasis) = disp(Complex(α),dim)
 disp_im(α::Float64,dim::FockBasis) = disp(α*im,dim)
 
-function tms(θ::Float64,dim::FockBasis)
-    x = tensor(create(dim),create(dim))-tensor(destroy(dim),destroy(dim))
-    x *= θ
+# Two-mode optical devices
+
+# Two-mode squeezer
+function tms(r::Float64,ϕ::Float64,dim::FockBasis)
+	z = r*exp(ϕ*im)
+	x = z*tensor(create(dim),create(dim))-conj(z)*tensor(destroy(dim),destroy(dim))
     op = exp(dense(x))
     return op
 end
 
+# Beam-splitter
 function bs(θ::Float64,dim::FockBasis)
     x = tensor(create(dim),destroy(dim))+tensor(destroy(dim),create(dim))
     x *= im*θ
@@ -37,6 +51,7 @@ function bs(θ::Float64,dim::FockBasis)
     return op
 end
 
+# Swap gate
 function swap(dim::FockBasis)
 	op = sparse(bs(π/2,dim))
 	return op
@@ -53,7 +68,7 @@ function apply(od::OpticalDevice,state::FockState)
 	else
 		throw(">2 modes operations are not implemented")
 	end
-	gate = od.optdev(od.param,state.dim)
+	gate = od.optdev(od.param...,state.dim)
 	if Δmode == 1
 		up = mode1 == 1 ? () : (idd for i in 1:(mode1-1))
 		down = mode2 == state.n_mode ? () : (idd for i in 1:(state.n_mode-mode2))

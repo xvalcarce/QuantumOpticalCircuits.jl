@@ -1,11 +1,26 @@
 import SparseArrays: SparseMatrixCSC, sparse
 
+# Utils
+
+id2 = [1 0
+	  0 1]
+
+function s_matrix(θ::Float64)
+	r = [cos(θ) sin(θ)
+		sin(θ) -cos(θ)]
+	return r
+end
+
+# Single-mode optical devices
+
+# Phase-shifter
 function ps(ϕ::Float64)
 	r = [cos(ϕ) -sin(ϕ)
 		 sin(ϕ) cos(ϕ)]
 	return r
 end
 
+# Single-mode squeezer
 function sms_re(g::Float64)
 	r = [exp(-g) 0
 		 0 exp(g)]
@@ -25,6 +40,13 @@ function sms(g::Complex)
 	return r
 end
 
+function sms(r::Float64,ϕ::Float64)
+	sϕ = s_matrix(ϕ)
+	r = cosh(r)*id2-sinh(r)*sϕ
+	return r
+end
+
+# Displacement
 function disp_re(α::Float64,d::Vector{Complex{Float64}},mode::Int)
 	d_ = d
 	d_[2mode-1] += α
@@ -38,21 +60,28 @@ function disp_im(α::Float64,d::Vector{Complex{Float64}},mode::Int)
 end
 
 function disp(α::Complex,d::Vector{Complex{Float64}},mode::Int)
-	d_ = disp_re(real(α),d,mode)
-	d_ = disp_im(imag(α),d_,mode)
+	d_ = d
+	d_[2mode-1] += real(α)
+	d_[2mode] += imag(α)
 	return d_
 end
 
-function tms(θ::Float64)
-	shθ = sinh(θ)
-	chθ = cosh(θ)
-	r = [chθ 0 shθ 0
-		 0 chθ 0 -shθ
-		 shθ 0 chθ 0
-		 0 -shθ 0 chθ]
+# Two-mode optical devices
+
+# Two-mode squeezer
+function tms(r::Float64,ϕ::Float64)
+	chr = cosh(r)
+	shr = sinh(r)
+	sϕ = s_matrix(ϕ)
+	shrϕ = -shr*sϕ
+	chrϕ = chr*id2
+	r = [chrϕ shrϕ
+		shrϕ chrϕ]	
 	return r
 end
 
+# Beam-splitter
+# TODO: Implement phase angle
 function bs(θ::Float64)
 	cθ = cos(θ)
 	sθ = sin(θ)
@@ -63,12 +92,15 @@ function bs(θ::Float64)
 	return r
 end
 
+# Swap gate
 function swap()
 	r = sparse([4,3,2,1],
 			[1,2,3,4],
 			[1,-1,1,-1.])
 	return r
 end
+
+# Application of gate on Gaussian state
 
 function apply(od::OpticalDevice,state::GaussianState)
 	state_ = copy(state)
@@ -82,7 +114,7 @@ function apply!(od::OpticalDevice,state::GaussianState)
 	else	
 		dg = collect(1:length(state.d))
 		r = sparse(dg,dg,1.0)
-		r_ = od.optdev(od.param)
+		r_ = od.optdev(od.param...)
 		if typeof(od.mode) == Int
 			r[2od.mode-1:2od.mode,2od.mode-1:2od.mode] = r_
 		elseif length(od.mode) == 2
