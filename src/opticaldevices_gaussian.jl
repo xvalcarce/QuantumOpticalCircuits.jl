@@ -73,7 +73,7 @@ function tms(r::Float64,ϕ::Float64)
 	chr = cosh(r)
 	shr = sinh(r)
 	sϕ = s_matrix(ϕ)
-	shrϕ = -shr*sϕ
+	shrϕ = shr*sϕ
 	chrϕ = chr*id2
 	r = [chrϕ shrϕ
 		shrϕ chrϕ]	
