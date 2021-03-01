@@ -45,7 +45,21 @@ herald_noclick!(state::FockState,mode::Int,η::Float64) = p_noclick!(state,mode,
 herald_click!(state::FockState,mode::Int,η::Float64) = p_click!(state,mode,η)
 
 function E(state::FockState,k::Vector{Int},η::Float64)
-	throw("POVM not implemented")
+	idd = identityoperator(state.dim)
+	noclick_op = sparse(sum([((-(1-η))^n*create(state.dim)^n*destroy(state.dim)^n)/factorial(n) for n in 0:state.dim.N]))
+	click_op = idd-noclick_op
+	op = []
+	for i in k
+		if i == 0
+			push!(op,noclick_op)
+		elseif i == 1
+			push!(op,click_op)
+		else
+			throw("k vector composed of 0 (no-click) and 1 (click) only")
+		end
+	end
+	op_ = tensor(op...)
+	e = real(expect(op_,state.ρ))
 end
 
 function correlator(state::FockState,i::Int,j::Int,η::Float64)
