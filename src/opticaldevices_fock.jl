@@ -80,7 +80,7 @@ function apply(od::OpticalDevice,state::FockState)
 		dom,upm = od.mode[2]>od.mode[1] ? od.mode : sort(od.mode) 
 		for m in 1:Δmode-1
 			up_ = (idd for i in 1:Δmode-m)
-			down_ = (idd for i in 1:m-)
+			down_ = (idd for i in 1:m)
 			s = tensor(up_...,swap_,down_...)
 			push!(swaps,s)
 		end
