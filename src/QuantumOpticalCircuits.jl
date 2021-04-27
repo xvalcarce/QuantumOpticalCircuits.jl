@@ -11,11 +11,12 @@ export State,
 	Circuit, FockCircuit, GaussianCircuit, PseudoGaussianCircuit,
 	add_gate!, compute, compute!, print
 
-include("states.jl")
+include("states/states.jl")
 
 abstract type Gate end
-include("opticaldevices.jl")
-include("measures.jl")
+
+include("opticaldevices/opticaldevices.jl")
+include("measures/measures.jl")
 
 include("circuits.jl")
 
