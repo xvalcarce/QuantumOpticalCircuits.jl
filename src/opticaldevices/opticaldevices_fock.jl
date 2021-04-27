@@ -74,17 +74,20 @@ function apply(od::OpticalDevice,state::FockState)
 		down = mode2 == state.n_mode ? () : (idd for i in 1:(state.n_mode-mode2))
 		gate_ = tensor(up...,gate,down...)
 	else
-		gate_ = tensor(gate,(idd for i in 1:(state.n_mode-2))...)
-		swaps = Vector{Operator}()
-		swap_ = swap(state.dim)
 		dom,upm = od.mode[2]>od.mode[1] ? od.mode : sort(od.mode) 
-		for m in 1:Δmode-1
-			up_ = (idd for i in 1:Δmode-m)
-			down_ = (idd for i in 1:m)
-			s = tensor(up_...,swap_,down_...)
-			push!(swaps,s)
+		idd_up = (idd for i in 1:(od.mode[1]-1))
+		idd_do = (idd for i in (od.mode[2]+1):state.n_mode)
+		gate_ = tensor(gate,(idd for i in 1:(Δmode-1))...)
+		swap_ = Vector{Operator}()
+		swap_gate = swap(state.dim)
+		for m in 0:Δmode-2
+			idd_swap_up_ = (idd for i in 1:(Δmode-1-m))
+			idd_swap_down_ = (idd for i in 1:m)
+			s = tensor(idd_swap_up_...,swap_gate,idd_swap_down_...)
+			push!(swap_,s)
 		end
-		gate_ = *(swaps...,gate_,reverse(swaps)...)
+		gate_ = *(swap_...,gate_,reverse(swap_)...)
+		gate_ = tensor(idd_up...,gate_,idd_do...)
 	end
 	if isa(state.ρ, Ket)
 		return gate_*state.ρ
