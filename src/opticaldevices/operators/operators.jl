@@ -1,6 +1,7 @@
 import LinearAlgebra: I
 import SparseArrays: SparseMatrixCSC, sparse
-import QuantumOptics: create, destroy, number, identityoperator, tensor, dense, displace, dagger, SparseOperator
+import QuantumOptics: create, destroy, number, identityoperator, tensor, dense, displace, dagger, SparseOperator, Ket
+import QuantumOptics: AbstractOperator as QOAbsOp
 
 abstract type AbstractOperator end
 
@@ -20,20 +21,63 @@ nmode(op::SingleModeOperator) = 1
 nmode(op::TwoModeOperator) = 2
 
 function mat1toN(mat::Matrix{Float64},N::Int,idx::NTuple{M,Int}) where {M}
-	m = sparse(N,N,1.0)
-	if M == 1
-		idx = idx[1]
-		m[2idx-1:2idx,2idx-1:2idx] = mat
-	elseif M ==2 
-		if idx[2]-idx[1] == 1
-			[2idx[1]-1:2idx[2],2idx[1]-1:2idx[2]] = mat
-		else
-			#Need some hacky stuff here
-		end
+	if N == M
+		return mat
 	else
-		throw(">2 modes operators are not implemented")
+		m = sparse(N,N,1.0)
+		if M == 1
+			idx = idx[1]
+			m[2idx-1:2idx,2idx-1:2idx] = mat
+		elseif M ==2 
+			if idx[2]-idx[1] == 1
+				[2idx[1]-1:2idx[2],2idx[1]-1:2idx[2]] = mat
+			else
+			#Need some hacky stuff here
+			end
+		else
+			throw(">2 modes operators are not implemented")
+		end
 	end
 	return m
+end
+
+function mat1toN(mat::QOAbsOp,N::Int,n::NTuple{M,Int}) where {M}
+	if N == M
+		return mat
+	else
+		idd = identityoperator(mat.basis_l)
+		Δn = M == 1 ? 1 : abs(n[2]-n[1])
+		if Δn == 1 
+			n = n[1]
+			up = n == 1 ? () : (idd for i in 1:(n-1))
+			down = n == N ? () : (idd for i in 1:(N-n))
+			mat = tensor(up...,mat,down...)
+		else
+			n = sort(collect(n))
+			up = (idd for i in 1:(n[1]-1))
+			down = (idd for i in (n[2]+1):N)
+			mat = tensor(mat, (idd in 1:(n[2]-n[1]))...)
+			swap_v = Vector{QOAbsOp}()
+			swap_op = sparse(bs(π/2,mat.basis_l))
+			for m in 0:Δn-2
+				idd_swap_up = (idd for i in 1:(Δn-1-m))
+				idd_swap_do = (idd for i in 1:m)
+				s = tensor(idd_swap_up...,swap_op,idd_swap_do...)
+				push!(swap_v,s)
+			end
+			mat = *(swap_v...,mat,reverse(swap_v)...)
+			mat = tensor(up...,mat,down...)
+		end
+		return mat
+	end
+end
+
+function (op::Displacement)(state::GaussianState,n::NTuple{1,Int})
+	v = vec(op)
+	idx = n[1]
+	state.d[2idx-1] += v[1]
+	state.d[2idx] += v[2]
+	return state
 end
 
 function (op::SingleModeOperator)(state::GaussianState,n::NTuple{1,Int})
@@ -42,4 +86,30 @@ function (op::SingleModeOperator)(state::GaussianState,n::NTuple{1,Int})
 	mat = mat1toN(mat,N,n)
 	state.d = mat*state.d
 	state.σ = mat*state.σ*mat'
+	return state
+end
+
+function (op::TwoModeOperator)(state::GaussianState,n::NTuple{2,Int})
+	N = nmode(state)
+	mat = mat(op)
+	mat = mat1toN(mat,N,n)
+	state.d = mat*state.d
+	state.σ = mat*state.σ*mat'
+	return state
+end
+
+function (op::SingleModeOperator)(state::FockState,n::NTuple{1,Int})
+	N = nmode(state)
+	mat = mat(op,state.dim)
+	mat = mat1toN(mat,N,n)
+	state.ρ = isa(state.ρ, Ket) ? mat*state.ρ : mat*state.ρ*dagger(mat)
+	return state
+end
+
+function (op::TwoModeOperator)(state::FockState,n::NTuple{2,Int})
+	N = nmode(state)
+	mat = mat(op,state.dim)
+	mat = mat1toN(mat,N,n)
+	state.ρ = isa(state.ρ, Ket) ? mat*state.ρ : mat*state.ρ*dagger(mat)
+	return state
 end
