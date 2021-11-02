@@ -1,9 +1,13 @@
+export OpticalDevice
+
+include("./operators/operators.jl")
+
 struct OpticalDevice{M,OP<:AbstractOperator}
 	operator::OP
 	mode::NTuple{M,Int}
 
 	function OpticalDevice(operator::OP,mode::NTuple{M,Int}) where {M,OP<:AbstractOperator}
-		@assert nmode(OP) == M "Operator acts on $(nmode(OP)), $M were given."
+		@assert nmode(operator) == M "Operator acts on $(nmode(operator)) mode(s), $M were given."
 		return new{M,OP}(operator,mode)
 	end
 end
@@ -15,5 +19,5 @@ end
 
 function (od::OpticalDevice)(state::AbstractState)
 	@assert any(od.mode .≤ nmode(state)) "OpticalDevice acts on a mode larger than the state"
-	return od.op(state,od.mode)
+	return od.operator(state,od.mode)
 end

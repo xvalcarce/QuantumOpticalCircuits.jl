@@ -1,4 +1,4 @@
-export BeamSplitter
+export BeamSplitter, BS
 
 """
 Beam splitter
@@ -8,6 +8,8 @@ Beam splitter
 struct BeamSplitter <: TwoModeOperator
 	θ::Real
 end
+
+BS(θ::Real) = BeamSplitter(θ)
 
 """
 	BeamSplitter(θ)

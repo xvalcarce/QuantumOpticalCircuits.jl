@@ -1,4 +1,4 @@
-export SingleModeSqueezer
+export SingleModeSqueezer, SMS
 
 """ 
 Single-mode Squeezer (SMS)
@@ -10,11 +10,14 @@ struct SingleModeSqueezer <: SingleModeOperator
 	ϕ::Real
 end
 
+SMS(r::Real,ϕ::Real) = SingleModeSqueezer(r,ϕ)
+SMS(r::Real) = SingleModeSqueezer(r,0.0)
+
 function mat(sms::SingleModeSqueezer)
-	shr = sinh(r)
-	chr = cosh(r)
-	sϕshr_ = -sin(ϕ)*shr
-	cϕshr = cos(ϕ)*shr
+	shr = sinh(sms.r)
+	chr = cosh(sms.r)
+	sϕshr_ = -sin(sms.ϕ)*shr
+	cϕshr = cos(sms.ϕ)*shr
 	m = [chr-cϕshr sϕshr_
 		 sϕshr_ chr+cϕshr]
 	return m

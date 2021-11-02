@@ -5,6 +5,8 @@ struct TwoModeSqueezer <: TwoModeOperator
 	ϕ::Real
 end
 
+TMS(r::Real,ϕ::Real) = TwoModeSqueezer(r,ϕ)
+
 function mat(tms::TwoModeSqueezer)
 	cϕ = cos(tms.ϕ)
 	sϕ = sin(tms.ϕ)

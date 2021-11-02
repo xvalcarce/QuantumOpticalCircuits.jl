@@ -1,4 +1,4 @@
-export PhaseShifter
+export PhaseShifter, PS
 
 """
 PhaseShifter
@@ -10,7 +10,9 @@ struct PhaseShifter <: SingleModeOperator
 	ϕ::Real
 end
 
-function mat(ps::PhaseShiter)
+PS(ϕ::Real) = PhaseShifter(ϕ)
+
+function mat(ps::PhaseShifter)
 	cϕ = cos(ps.ϕ)
 	sϕ = sin(ps.ϕ)
 	m = [cϕ -sϕ
