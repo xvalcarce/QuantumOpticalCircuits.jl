@@ -1,4 +1,4 @@
-abstract type State end
+abstract type AbstractState end
 
 include("states_fock.jl")
 include("states_gaussian.jl")
