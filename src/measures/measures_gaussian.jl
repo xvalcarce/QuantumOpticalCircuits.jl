@@ -1,4 +1,4 @@
-import LinearAlgebra: I,det,inv,normalize
+import LinearAlgebra: I,det,inv,normalize,eigvals
 
 # Gaussian state
 
@@ -18,9 +18,10 @@ function p_noclick!(state::GaussianState,mode::Int,η::Float64)
 	M = M_matrix(state)
 	F = zeros(size(M)...)
 	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-η)/(1+η))*Matrix{Float64}(I,2,2)
-	imf = inv(M+F)
+	MF = M+F
+	imf = inv(MF)
 	p_nc = 2/(1+η)
-	p_nc /= √(det(state.σ)*det(M+F))
+	p_nc /= √(det(state.σ)*det(MF))
 	p_nc *= exp(-.5*d'*(M-M*imf*M)*d)
 	p_nc = real(p_nc)
 	d_ = imf*M*d
@@ -67,6 +68,9 @@ function O_(state::GaussianState,l::Vector{Int},η::Float64)
 end
 
 function E(state::GaussianState,k::Vector{Int},η::Float64)
+	"""
+	k -> 0 no click , 1 click
+	"""
 	k_0s = findall(x->x==0,k)
 	lk = length(k)
 	n_bitstring = lk-length(k_0s)
@@ -139,7 +143,7 @@ function p_noclick!(state::PseudoGaussianState,mode::Int,η::Float64)
 	return p_nc
 end
 
-function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64)
+function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int)
 	p_c = 0
 	states = Vector{GaussianState}()
 	prob = Vector{Float64}()
@@ -147,7 +151,7 @@ function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64)
 	for i in 1:n_composite_state
 		state_□ = copy(state.states[i])
 		ptrace!(state_□,mode)
-		p_nc = p_noclick!(state.states[i],mode,η)
+		p_nc = round(p_noclick!(state.states[i],mode,η),digits=tol)
 		p_c_i = 1-p_nc
 		if p_c_i == 0.0
 			throw(InvalidStateException("Can not condition to click, probability of click is 0.0"))

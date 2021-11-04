@@ -42,7 +42,7 @@ function p_click!(state::FockState,mode::Int,η::Float64)
 end
 
 herald_noclick!(state::FockState,mode::Int,η::Float64) = p_noclick!(state,mode,η)
-herald_click!(state::FockState,mode::Int,η::Float64) = p_click!(state,mode,η)
+herald_click!(state::FockState,mode::Int,η::Float64,tol::Int) = round(p_click!(state,mode,η), digits=tol)
 
 function E(state::FockState,k::Vector{Int},η::Float64)
 	idd = identityoperator(state.dim)
