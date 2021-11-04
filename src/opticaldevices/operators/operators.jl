@@ -22,25 +22,29 @@ include("./two_modes/swap.jl")
 nmode(op::SingleModeOperator) = 1
 nmode(op::TwoModeOperator) = 2
 
-function mat1toN(mat::Union{Matrix{Float64},SparseMatrixCSC},N::Int,idx::NTuple{M,Int}) where {M}
-	if N == M
+function mat1toN(mat::Matrix{Float64},N::Int,idx::NTuple{1,Int})
+	if N == 1
 		return mat
 	else
 		m = sparse(1.0I,2N,2N)
-		if M == 1
-			idx = idx[1]
-			m[2idx-1:2idx,2idx-1:2idx] = mat
-		elseif M == 2 
-			if idx[2]-idx[1] == 1
-				m[2idx[1]-1:2idx[2],2idx[1]-1:2idx[2]] = mat
-			else
-			#Need some hacky stuff here
-			end
-		else
-			throw(">2 modes operators are not implemented")
-		end
+		idx = idx[1]
+		m[2idx-1:2idx,2idx-1:2idx] = mat
+		return m
 	end
-	return m
+end
+
+function mat1toN(mat::Union{Matrix{Float64},SparseMatrixCSC},N::Int,idx::NTuple{2,Int})
+	if N == 2
+		return mat
+	else
+		m = sparse(1.0I,2N,2N)
+		if idx[2]-idx[1] == 1
+			m[2idx[1]-1:2idx[2],2idx[1]-1:2idx[2]] = mat
+		else
+			#Need some hacky stuff here
+		end
+		return m
+	end
 end
 
 function mat1toN(mat::QOAbsOp,N::Int,n::NTuple{1,Int})
