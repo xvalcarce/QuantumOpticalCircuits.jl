@@ -22,7 +22,7 @@ include("./two_modes/swap.jl")
 nmode(op::SingleModeOperator) = 1
 nmode(op::TwoModeOperator) = 2
 
-function mat1toN(mat::Matrix{Float64},N::Int,idx::NTuple{M,Int}) where {M}
+function mat1toN(mat::Union{Matrix{Float64},SparseMatrixCSC},N::Int,idx::NTuple{M,Int}) where {M}
 	if N == M
 		return mat
 	else
@@ -43,16 +43,30 @@ function mat1toN(mat::Matrix{Float64},N::Int,idx::NTuple{M,Int}) where {M}
 	return m
 end
 
-function mat1toN(mat::QOAbsOp,N::Int,n::NTuple{M,Int}) where {M}
-	if N == M
+function mat1toN(mat::QOAbsOp,N::Int,n::NTuple{1,Int})
+	if N == 1
 		return mat
 	else
 		idd = identityoperator(mat.basis_l)
-		Δn = M == 1 ? 1 : abs(n[2]-n[1])
+		n = n[1]
+		up = n == 1 ? () : (idd for i in 1:(n-1))
+		down = n == N ? () : (idd for i in 1:(N-n))
+		mat = tensor(up...,mat,down...)
+		return mat
+	end
+end
+
+
+function mat1toN(mat::QOAbsOp,N::Int,n::NTuple{2,Int})
+	if N == 2
+		return mat
+	else
+		idd = identityoperator(mat.basis_l.bases[1])
+		Δn = abs(n[2]-n[1])
 		if Δn == 1 
 			n = n[1]
 			up = n == 1 ? () : (idd for i in 1:(n-1))
-			down = n == N ? () : (idd for i in 1:(N-n))
+			down = n == N ? () : (idd for i in 1:(N-n-1))
 			mat = tensor(up...,mat,down...)
 		else
 			# TODO: find a more elegant way
@@ -82,7 +96,7 @@ function (op::Displacement)(state::GaussianState,n::NTuple{1,Int})
 	state.d[2idx] += v[2]
 	return state
 end
-
+	
 function (op::SingleModeOperator)(state::GaussianState,n::NTuple{1,Int})
 	N = nmode(state)
 	m = mat(op)
@@ -98,6 +112,13 @@ function (op::TwoModeOperator)(state::GaussianState,n::NTuple{2,Int})
 	m = mat1toN(m,N,n)
 	state.d = m*state.d
 	state.σ = m*state.σ*m'
+	return state
+end
+
+function (op::AbstractOperator)(state::PseudoGaussianState,n)
+	for s in state.states
+		op(s,n)
+	end
 	return state
 end
 

@@ -1,3 +1,12 @@
+export AbstractState,
+	   FockState,
+	   GaussianState,
+	   PseudoGaussianState,
+	   ptrace!,
+	   nmode
+
+import QuantumOptics: expect
+
 abstract type AbstractState end
 
 include("states_fock.jl")

@@ -1,4 +1,4 @@
-export TwoModeSqueezer
+export TwoModeSqueezer, TMS
 
 struct TwoModeSqueezer <: TwoModeOperator
 	r::Real
@@ -6,6 +6,7 @@ struct TwoModeSqueezer <: TwoModeOperator
 end
 
 TMS(r::Real,ϕ::Real) = TwoModeSqueezer(r,ϕ)
+TMS(r::Real) = TwoModeSqueezer(r,0.0)
 
 function mat(tms::TwoModeSqueezer)
 	cϕ = cos(tms.ϕ)

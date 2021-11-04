@@ -17,6 +17,7 @@ GaussianState(modes::Int) = GaussianState(complex(zeros(2modes)),(1/4)Matrix{Com
 PseudoGaussianState(modes::Int) = PseudoGaussianState([1.0],[GaussianState(modes)])
 
 nmode(state::GaussianState) = Int(length(state.d)/2)
+nmode(state::PseudoGaussianState) = Int(length(state.states[1].d)/2)
 
 # Utilities
 
