@@ -1,4 +1,4 @@
-import LinearAlgebra: I
+import LinearAlgebra: I, kron
 import SparseArrays: SparseMatrixCSC, sparse
 import QuantumOptics: create, destroy, number, identityoperator, tensor, dense, displace, dagger, SparseOperator, Ket
 import QuantumOptics: AbstractOperator as QOAbsOp
@@ -21,6 +21,20 @@ include("./two_modes/swap.jl")
 
 nmode(op::SingleModeOperator) = 1
 nmode(op::TwoModeOperator) = 2
+
+function Ω(n::Int)
+	idn = Matrix{Float64}(I,n,n)
+	Ω = kron(idn,[0 1
+				  -1 0])
+	return Ω
+end
+
+function issymplectic(mat::Union{Matrix{Float64},SparseMatrixCSC},tol=15)
+	n = Int(size(mat)[1]/2)
+	M = Ω(n)
+	lhs = round.(transpose(mat)*M*mat,digits=tol)
+	return lhs == M
+end
 
 function mat1toN(mat::Matrix{Float64},N::Int,idx::NTuple{1,Int})
 	if N == 1
