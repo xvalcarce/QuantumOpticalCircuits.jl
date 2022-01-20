@@ -27,3 +27,5 @@ function mat(tms::TwoModeSqueezer,dim::FockBasis)
     m = exp(dense(x))
 	return m
 end
+
+Base.:(==)(lhs::TwoModeSqueezer,rhs::TwoModeSqueezer) = (lhs.r == rhs.r) && (lhs.ϕ == rhs.ϕ)

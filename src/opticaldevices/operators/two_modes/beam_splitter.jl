@@ -32,3 +32,5 @@ function mat(bs::BeamSplitter,dim::FockBasis)
     m = exp(dense(x))
     return m
 end
+
+Base.:(==)(lhs::BeamSplitter,rhs::BeamSplitter) = lhs.θ == rhs.θ

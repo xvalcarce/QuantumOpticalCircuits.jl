@@ -29,3 +29,5 @@ function mat(sms::SingleModeSqueezer,dim::FockBasis)
     m = exp(dense(x))
     return m
 end
+
+Base.:(==)(lhs::SingleModeSqueezer,rhs::SingleModeSqueezer) = (lhs.r == rhs.r) && (lhs.ϕ == rhs.ϕ)

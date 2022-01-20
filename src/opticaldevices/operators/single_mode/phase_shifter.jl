@@ -25,3 +25,5 @@ function mat(ps::PhaseShifter,dim::FockBasis)
     m = exp(dense(x))
     return m
 end
+
+Base.:(==)(lhs::PhaseShifter,rhs::PhaseShifter) = lhs.ϕ == rhs.ϕ

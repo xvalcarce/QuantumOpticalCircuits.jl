@@ -24,3 +24,5 @@ function vec(d::Displacement)
 		 imag(d.α)]
 	return v
 end
+
+Base.:(==)(lhs::Displacement,rhs::Displacement) = lhs.α == rhs.α
