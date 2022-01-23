@@ -18,6 +18,6 @@ end
 (op::AbstractOperator)(m::NTuple{M,Int} where {M}) = OpticalDevice(op,m)
 
 function (od::OpticalDevice)(state::AbstractState)
-	@assert any(od.mode .≤ nmode(state)) "OpticalDevice acts on a mode larger than the state"
+	@assert all(od.mode .≤ nmode(state)) "OpticalDevice acts on a mode larger than the state"
 	return od.operator(state,od.mode)
 end
