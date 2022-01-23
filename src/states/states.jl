@@ -2,6 +2,7 @@ export AbstractState,
 	   FockState,
 	   GaussianState,
 	   PseudoGaussianState,
+	   vacuum, coherent,
 	   ptrace!,
 	   nmode
 

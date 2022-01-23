@@ -2,8 +2,8 @@ import Base: copy
 import LinearAlgebra: I,inv
 
 mutable struct GaussianState <: AbstractState
-	d::Array{Complex{Float64},1}
-	σ::Array{Complex{Float64},2}
+	d::Vector{Float64}
+	σ::Matrix{Float64}
 end
 
 mutable struct PseudoGaussianState <: AbstractState
@@ -13,8 +13,11 @@ end
 
 PseudoGaussianState(state::GaussianState) = PseudoGaussianState([1.0],[state])
 
-GaussianState(modes::Int) = GaussianState(complex(zeros(2modes)),(1/4)Matrix{Complex{Float64}}(I,2modes,2modes))
+GaussianState(modes::Int) = GaussianState(zeros(2modes),Matrix{Float64}((1/4)I,2modes,2modes))
 PseudoGaussianState(modes::Int) = PseudoGaussianState([1.0],[GaussianState(modes)])
+
+vacuum(n::Int) = GaussianState(n)
+coherent(α::Float64) = GaussianState([real(α),imag(α)],Matrix{Float64}((1/4)I,2,2))
 
 nmode(state::GaussianState) = Int(length(state.d)/2)
 nmode(state::PseudoGaussianState) = Int(length(state.states[1].d)/2)
@@ -41,6 +44,21 @@ function M_matrix(state::GaussianState)
 end
 
 # Operations on state
+
+Base.:(==)(s::GaussianState,t::GaussianState) = (s.d == t.d) && (s.σ == t.σ)
+
+function Base.kron(s::GaussianState,t::GaussianState)
+	ns = nmode(s)
+	nt = nmode(t)
+	n = ns+nt
+	d = vcat(s.d,t.d)
+	σ = zeros(2n,2n)
+	σ[1:2ns,1:2ns] = s.σ
+	base = 2ns
+	σ[base+1:base+2nt,base+1:base+2nt] = t.σ
+	st = GaussianState(vcat(s.d,t.d),σ)
+	return st
+end
 
 function ptrace!(state::GaussianState,mode::Int)
 	idx = 2mode
