@@ -111,6 +111,24 @@ function correlator(state::GaussianState,i::Int,j::Int,η::Float64)
     return corr
 end
 
+function wigner(state::GaussianState,α::Vector{Float64})
+	Δα = α-state.d
+	W = exp(-.5*transpose(Δα)*inv(state.σ)*Δα)/√(det(2π*state.σ))
+	return W
+end
+
+function wigner(state::GaussianState,αs::Vector{Vector{Float64}})
+	invσ = inv(state.σ)
+	den = √(det(2π*state.σ))
+	N = length(αs)
+	W = zeros(N)
+	Threads.@threads for i in 1:N
+		Δα = αs[i]-state.d
+		W[i] = exp(-.5*transpose(Δα)*invσ*Δα)den
+	end
+	return W
+end
+
 # Pseudo-gaussian state measures
 
 function E(state::PseudoGaussianState,k::Vector{Int},η::Float64)
@@ -154,7 +172,7 @@ function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int
 		p_nc = round(p_noclick!(state.states[i],mode,η),digits=tol)
 		p_c_i = 1-p_nc
 		if p_c_i == 0.0
-			throw(InvalidStateException("Can not condition to click, probability of click is 0.0"))
+			throw(DomainError("Can not condition to click, probability of click is 0.0"))
 		end
 		p_c += p_c_i
 		append!(states,[state_□,state.states[i]])

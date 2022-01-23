@@ -1,4 +1,4 @@
-export PhotonDetector, Heralding, Heralding_noclick
+export PhotonDetector, Heralding, Heralding_noclick, Wigner
 
 include("measures_gaussian.jl")
 include("measures_fock.jl")
@@ -23,6 +23,10 @@ struct Heralding <: Measure
 	tol::Int
 end
 
+struct Wigner <: Measure
+	α::Union{Vector{Float64},Vector{Vector{Float64}}}
+end
+
 function (meas::PhotonDetector)(state::AbstractState)
 	out = p_click(state,meas.mode,meas.η)
 	r_out = round(out, digits=meas.tol)
@@ -32,6 +36,11 @@ end
 function (meas::Heralding)(state::AbstractState)
 	out = herald_click!(state,meas.mode,meas.η,meas.tol)
 	return state
+end
+
+function (meas::Wigner)(state::AbstractState)
+	out = wigner(state,meas.α)
+	return out
 end
 
 PhotonDetector(mode::Int;η=0.0,tol=12) = PhotonDetector(mode,η,tol)
