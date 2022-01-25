@@ -16,14 +16,14 @@ function mat(tms::TwoModeSqueezer)
 					  0 1]
 	phase = shr*[cϕ sϕ
 				 sϕ -cϕ]
-	m = [diag phase
-		 phase diag]
+	m = [diag -phase
+		 -phase diag]
 	return m
 end
 
 function mat(tms::TwoModeSqueezer,dim::FockBasis)
 	z = tms.r*exp(tms.ϕ*im)
-	x = z*tensor(create(dim),create(dim))-conj(z)*tensor(destroy(dim),destroy(dim))
+	x = conj(z)*tensor(destroy(dim),destroy(dim))-z*tensor(create(dim),create(dim))
     m = exp(dense(x))
 	return m
 end
