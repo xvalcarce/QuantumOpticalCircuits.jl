@@ -1,4 +1,4 @@
-export PhotonDetector, Heralding, Heralding_noclick, Wigner
+export PhotonDetector, Heralding, Wigner
 
 include("measures_gaussian.jl")
 include("measures_fock.jl")
@@ -17,15 +17,23 @@ struct PhotonDetector <: Measure
 	tol::Int
 end
 
+PhotonDetector(mode::Int;η=0.0,tol=8) = PhotonDetector(mode,η,tol)
+
 struct Heralding <: Measure
 	mode::Int
 	η::Float64
 	tol::Int
 end
 
+Heralding(mode::Int;η=0.0,tol=8) = Heralding(mode,η,tol)
+
 struct Wigner <: Measure
+	mode::Int
 	α::Union{Vector{Float64},Vector{Vector{Float64}}}
 end
+
+Wigner(mode::Int,α::Complex) = Wigner(mode,[real(α),imag(α)])
+Wigner(mode::Int,α::Vector{Complex}) = Wigner(mode,[[real(a),imag(a)] for a in α])
 
 function (meas::PhotonDetector)(state::AbstractState)
 	out = p_click(state,meas.mode,meas.η)
@@ -34,15 +42,12 @@ function (meas::PhotonDetector)(state::AbstractState)
 end
 
 function (meas::Heralding)(state::AbstractState)
-	out = herald_click!(state,meas.mode,meas.η,meas.tol)
+	out = herald!(state,meas.mode,meas.η,meas.tol)
+	@debug "Heralding with p = $out"
 	return state
 end
 
 function (meas::Wigner)(state::AbstractState)
-	out = wigner(state,meas.α)
+	out = wigner(state,meas.mode,meas.α)
 	return out
 end
-
-PhotonDetector(mode::Int;η=0.0,tol=12) = PhotonDetector(mode,η,tol)
-Heralding(mode::Int;η=0.0,tol=12) = Heralding(mode,η,tol)
-Heralding_noclick(mode::Int;η=0.0,tol=12) = Heralding_noclick(mode,η,tol)

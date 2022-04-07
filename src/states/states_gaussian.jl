@@ -38,11 +38,6 @@ function copy(state::PseudoGaussianState)
 	return state_
 end
 
-function M_matrix(state::GaussianState)
-	m = inv(state.σ)
-	return m
-end
-
 # Operations on state
 
 Base.:(==)(s::GaussianState,t::GaussianState) = (s.d == t.d) && (s.σ == t.σ)

@@ -2,9 +2,15 @@ import LinearAlgebra: I,det,inv,normalize,eigvals
 
 # Gaussian state
 
+function M_matrix(state::GaussianState)
+	m = inv(state.σ)
+	return m
+end
+
 function p_noclick(state::GaussianState,mode::Int,η::Float64)
 	d = state.d
 	M = M_matrix(state)
+	# using Sparse matrix is not worth it due to matrix inverse
 	F = zeros(size(M)...)
 	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-η)/(1+η))*Matrix{Float64}(I,2,2)
 	p_nc = (2*√(det(M)))/((1+η)*√(det(M+F)))
@@ -32,12 +38,10 @@ function p_noclick!(state::GaussianState,mode::Int,η::Float64)
 	return p_nc
 end
 
-function herald_click!(state::GaussianState,mode::Int,η::Float64)
+function herald!(state::GaussianState,mode::Int,η::Float64)
 	throw(ArgumentError("Can not herald a GaussianState: the post-selected state is not Gaussian.\n
-						Try with a PseudoGaussianState or a PseudoGaussianCircuit"))
+						Use PseudoGaussianState."))
 end
-
-herald_noclick!(state::GaussianState,mode::Int,η::Float64) = herald_click!(state,mode,η)
 
 function o_(l::Vector{Int},η::Float64)
 	η_factor = (4*(1-η))/(1+η)
@@ -161,7 +165,7 @@ function p_noclick!(state::PseudoGaussianState,mode::Int,η::Float64)
 	return p_nc
 end
 
-function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int)
+function herald!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int)
 	p_c = 0
 	states = Vector{GaussianState}()
 	prob = Vector{Float64}()
@@ -180,7 +184,6 @@ function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int
 	end
 	state.prob = prob
 	state.states = states
+	p_c = round(p_c,digits=tol)
 	return p_c
 end
-
-herald_noclick!(state::PseudoGaussianState,mode::Int,η::Float64) = p_noclick!(state,mode,η)
