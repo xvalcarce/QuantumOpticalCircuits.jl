@@ -55,7 +55,10 @@ function mat1toN(mat::Union{Matrix{Float64},SparseMatrixCSC},N::Int,idx::NTuple{
 		if idx[2]-idx[1] == 1
 			m[2idx[1]-1:2idx[2],2idx[1]-1:2idx[2]] = mat
 		else
-			#Need some hacky stuff here
+			m[2idx[1]-1:2idx[1],2idx[1]-1:2idx[1]] = mat[1:2,1:2]
+			m[2idx[1]-1:2idx[1],2idx[2]-1:2idx[2]] = mat[1:2,3:4]
+			m[2idx[2]-1:2idx[2],2idx[1]-1:2idx[1]] = mat[3:4,1:2]
+			m[2idx[2]-1:2idx[2],2idx[2]-1:2idx[2]] = mat[3:4,3:4]
 		end
 		return m
 	end
