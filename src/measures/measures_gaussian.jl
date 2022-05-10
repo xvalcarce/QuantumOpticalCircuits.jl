@@ -136,6 +136,7 @@ function E(state::PseudoGaussianState,k::Vector{Int},η::Float64)
 	for (p,s) in zip(state.prob,state.states)
 		E_ += p*E(s,k,η)
 	end
+	E_ *= state.norm
 	return E_
 end
 
@@ -150,6 +151,7 @@ function p_noclick(state::PseudoGaussianState,mode::Int,η::Float64)
 	for (c_i,s) in zip(state.prob,state.states)
 		p_nc += c_i*p_noclick(s,mode,η)
 	end
+	p_nc *= state.norm
 	return p_nc
 end
 
@@ -158,6 +160,7 @@ function p_noclick!(state::PseudoGaussianState,mode::Int,η::Float64)
 	for (idx,s) in enumerate(state.states)
 		p_nc += state.prob[idx]*p_noclick!(s,mode,η)
 	end
+	p_nc *= state.norm
 	return p_nc
 end
 
@@ -166,6 +169,8 @@ function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int
 	states = Vector{GaussianState}()
 	prob = Vector{Float64}()
 	n_composite_state = length(state.prob)
+	p_noclick(state,mode,η)
+	state.norm *= p_noclick(state,mode,η)
 	for i in 1:n_composite_state
 		state_□ = copy(state.states[i])
 		ptrace!(state_□,mode)
@@ -176,7 +181,7 @@ function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int
 		end
 		p_c += p_c_i
 		append!(states,[state_□,state.states[i]])
-		append!(prob,state.prob[i]*(1/(1-p_nc))*[1.0,-p_nc])
+		append!(prob,state.prob[i]*[1.0,-p_nc])
 	end
 	state.prob = prob
 	state.states = states

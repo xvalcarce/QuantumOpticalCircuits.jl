@@ -7,14 +7,15 @@ mutable struct GaussianState <: AbstractState
 end
 
 mutable struct PseudoGaussianState <: AbstractState
+	norm::Float64
 	prob::Vector{Float64}
 	states::Vector{GaussianState}
 end
 
-PseudoGaussianState(state::GaussianState) = PseudoGaussianState([1.0],[state])
+PseudoGaussianState(state::GaussianState) = PseudoGaussianState(1.0,[1.0],[state])
 
 GaussianState(modes::Int) = GaussianState(zeros(2modes),Matrix{Float64}((1/4)I,2modes,2modes))
-PseudoGaussianState(modes::Int) = PseudoGaussianState([1.0],[GaussianState(modes)])
+PseudoGaussianState(modes::Int) = PseudoGaussianState(1.0,[1.0],[GaussianState(modes)])
 
 vacuum(n::Int) = GaussianState(n)
 coherent(α::Float64) = GaussianState([real(α),imag(α)],Matrix{Float64}((1/4)I,2,2))
@@ -34,7 +35,7 @@ end
 function copy(state::PseudoGaussianState)
 	prob_ = copy(state.prob)
 	states_ = [copy(s) for s in state.states]
-	state_ = PseudoGaussianState(prob_,states_)
+	state_ = PseudoGaussianState(state.norm,prob_,states_)
 	return state_
 end
 

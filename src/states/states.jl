@@ -38,5 +38,3 @@ function GaussianState(state::FockState)
 	gs = GaussianState(d_,σ_)
 	return gs
 end
-
-PseudoGaussianState(state::FockState) = PseudoGaussianState([1.0],[GaussianState(state)])
