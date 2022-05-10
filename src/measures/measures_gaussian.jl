@@ -170,7 +170,7 @@ function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int
 	prob = Vector{Float64}()
 	n_composite_state = length(state.prob)
 	p_noclick(state,mode,η)
-	state.norm *= p_noclick(state,mode,η)
+	state.norm *= 1/(1-p_noclick(state,mode,η))
 	for i in 1:n_composite_state
 		state_□ = copy(state.states[i])
 		ptrace!(state_□,mode)
