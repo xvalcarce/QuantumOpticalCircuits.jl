@@ -1,27 +1,32 @@
-import LinearAlgebra: I,det,inv,normalize,eigvals
+import LinearAlgebra: Symmetric,I,det,inv,normalize,eigvals
+import SparseArrays: spzeros
+import PDMats: PDMat,det,inv
 
 # Gaussian state
 
 function p_noclick(state::GaussianState,mode::Int,η::Float64)
 	d = state.d
-	M = M_matrix(state)
-	F = zeros(size(M)...)
+	σ = PDMat(Symmetric(state.σ))
+	M = inv(σ)
+	F = spzeros(size(M)...)
 	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-η)/(1+η))*Matrix{Float64}(I,2,2)
-	p_nc = (2*√(det(M)))/((1+η)*√(det(M+F)))
-	p_nc *= exp(-.5*d'*(M-M*inv(M+F)*M)*d)
+	M_F = PDMat(M+F)
+	p_nc = (2*√(det(M)))/((1+η)*√(det(M_F)))
+	p_nc *= exp(-.5*d'*(M-M*inv(M_F)*M)*d)
 	p_nc = real(p_nc)
 	return p_nc
 end
 
 function p_noclick!(state::GaussianState,mode::Int,η::Float64)
 	d = state.d
-	M = M_matrix(state)
-	F = zeros(size(M)...)
+	σ = PDMat(Symmetric(state.σ))
+	M = inv(σ)
+	F = spzeros(size(M)...)
 	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-η)/(1+η))*Matrix{Float64}(I,2,2)
-	MF = M+F
-	imf = inv(MF)
+	M_F = M+F
+	imf = inv(M_F)
 	p_nc = 2/(1+η)
-	p_nc /= √(det(state.σ)*det(MF))
+	p_nc /= √(det(σ)*det(M_F))
 	p_nc *= exp(-.5*d'*(M-M*imf*M)*d)
 	p_nc = real(p_nc)
 	d_ = imf*M*d
@@ -57,12 +62,12 @@ end
 
 function O_(state::GaussianState,l::Vector{Int},η::Float64)
 	η_factor = (2/(1+η))^sum(l)
-	n = length(l)
 	o = o_(l,η)
-	M = M_matrix(state)
+	σ = PDMat(Symmetric(state.σ))
+	M = inv(σ)
 	d = state.d
 	O = exp(-.5*d'*(M-M*inv(M+o)*M)*d)
-	O /= √(det(state.σ)*det(M+o))
+	O /= √(det(σ)*det(M+o))
 	O *= η_factor
 	return real(O)
 end
@@ -77,7 +82,7 @@ function E(state::GaussianState,k::Vector{Int},η::Float64)
 	if n_bitstring == 0
 		S_k = [ones(Int,lk)]
 	else
-		S_k = vec(map(collect, Iterators.product(ntuple(_ -> [0,1], n_bitstring)...)))
+		S_k = collect.(Iterators.product(fill(0:1,n_bitstring)...))[:]
 		for l in S_k
 			for i in k_0s
 				insert!(l,i,1)
@@ -112,19 +117,20 @@ function correlator(state::GaussianState,i::Int,j::Int,η::Float64)
 end
 
 function wigner(state::GaussianState,α::Vector{Float64})
+	σ = PDMat(Symmetric(state.σ))
 	Δα = α-state.d
-	W = exp(-.5*transpose(Δα)*inv(state.σ)*Δα)/√(det(2π*state.σ))
+	W = exp(-.5*invquad(σ,Δα))/√(det(2π*σ))
 	return W
 end
 
 function wigner(state::GaussianState,αs::Vector{Vector{Float64}})
-	invσ = inv(state.σ)
-	den = √(det(2π*state.σ))
+	σ = PDMat(Symmetric(state.σ))
+	den = √(det(2π*σ))
 	N = length(αs)
 	W = zeros(N)
 	Threads.@threads for i in 1:N
 		Δα = αs[i]-state.d
-		W[i] = exp(-.5*transpose(Δα)*invσ*Δα)den
+		W[i] = exp(-.5*invquad(σ,Δα))/den
 	end
 	return W
 end
