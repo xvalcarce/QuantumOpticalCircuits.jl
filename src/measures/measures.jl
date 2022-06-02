@@ -14,13 +14,13 @@ abstract type Measure end
 struct PhotonDetector <: Measure
 	mode::Int
 	η::Float64
-	tol::Int
+	tol::Float64
 end
 
 struct Heralding <: Measure
 	mode::Int
 	η::Float64
-	tol::Int
+	tol::Float64
 end
 
 struct Wigner <: Measure
@@ -29,7 +29,7 @@ end
 
 function (meas::PhotonDetector)(state::AbstractState)
 	out = p_click(state,meas.mode,meas.η)
-	r_out = round(out, digits=meas.tol)
+    r_out = out > meas.tol ? out : 0.0
 	return r_out
 end
 
@@ -43,6 +43,6 @@ function (meas::Wigner)(state::AbstractState)
 	return out
 end
 
-PhotonDetector(mode::Int;η=0.0,tol=12) = PhotonDetector(mode,η,tol)
-Heralding(mode::Int;η=0.0,tol=12) = Heralding(mode,η,tol)
-Heralding_noclick(mode::Int;η=0.0,tol=12) = Heralding_noclick(mode,η,tol)
+PhotonDetector(mode::Int;η=0.0,tol=1e-12) = PhotonDetector(mode,η,tol)
+Heralding(mode::Int;η=0.0,tol=1e-12) = Heralding(mode,η,tol)
+Heralding_noclick(mode::Int;η=0.0,tol=1e-12) = Heralding_noclick(mode,η,tol)

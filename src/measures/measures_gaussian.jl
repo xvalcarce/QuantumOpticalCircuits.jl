@@ -23,7 +23,7 @@ function p_noclick!(state::GaussianState,mode::Int,η::Float64)
 	M = inv(σ)
 	F = spzeros(size(M)...)
 	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-η)/(1+η))*Matrix{Float64}(I,2,2)
-	M_F = M+F
+    M_F = PDMat(M+F)
 	imf = inv(M_F)
 	p_nc = 2/(1+η)
 	p_nc /= √(det(σ)*det(M_F))
@@ -170,7 +170,7 @@ function p_noclick!(state::PseudoGaussianState,mode::Int,η::Float64)
 	return p_nc
 end
 
-function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int)
+function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Float64)
 	p_c = 0
 	states = Vector{GaussianState}()
 	prob = Vector{Float64}()
@@ -180,11 +180,9 @@ function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Int
 	for i in 1:n_composite_state
 		state_□ = copy(state.states[i])
 		ptrace!(state_□,mode)
-		p_nc = round(p_noclick!(state.states[i],mode,η),digits=tol)
+		p_nc = p_noclick!(state.states[i],mode,η)
 		p_c_i = 1-p_nc
-		if p_c_i == 0.0
-			throw(DomainError("Can not condition to click, probability of click is 0.0"))
-		end
+        @assert p_c_i > tol "Click probability below tolerance ($tol): $p_c_i"
 		p_c += p_c_i
 		append!(states,[state_□,state.states[i]])
 		append!(prob,state.prob[i]*[1.0,-p_nc])
