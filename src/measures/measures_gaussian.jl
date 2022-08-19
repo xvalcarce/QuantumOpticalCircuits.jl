@@ -5,11 +5,12 @@ import PDMats: PDMat,det,inv
 # Gaussian state
 
 function p_noclick(state::GaussianState,mode::Int,η::Float64)
+    R = 1-η
 	d = state.d
 	σ = PDMat(Symmetric(state.σ))
 	M = inv(σ)
 	F = spzeros(size(M)...)
-	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-η)/(1+η))*Matrix{Float64}(I,2,2)
+	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-R)/(1+R))*Matrix{Float64}(I,2,2)
 	M_F = PDMat(M+F)
 	p_nc = (2*√(det(M)))/((1+η)*√(det(M_F)))
 	p_nc *= exp(-.5*d'*(M-M*inv(M_F)*M)*d)
@@ -18,11 +19,12 @@ function p_noclick(state::GaussianState,mode::Int,η::Float64)
 end
 
 function p_noclick!(state::GaussianState,mode::Int,η::Float64)
+    R = 1-η
 	d = state.d
 	σ = PDMat(Symmetric(state.σ))
 	M = inv(σ)
 	F = spzeros(size(M)...)
-	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-η)/(1+η))*Matrix{Float64}(I,2,2)
+	F[2mode-1:2mode,2mode-1:2mode] = (4*(1-R)/(1+R))*Matrix{Float64}(I,2,2)
     M_F = PDMat(M+F)
 	imf = inv(M_F)
 	p_nc = 2/(1+η)
@@ -45,7 +47,8 @@ end
 herald_noclick!(state::GaussianState,mode::Int,η::Float64) = herald_click!(state,mode,η)
 
 function o_(l::Vector{Int},η::Float64)
-	η_factor = (4*(1-η))/(1+η)
+    R = 1-η
+	η_factor = (4*(1-R))/(1+R)
 	n = length(l)
 	o = Matrix{Int}(I,2n,2n)
 	for i in 1:n

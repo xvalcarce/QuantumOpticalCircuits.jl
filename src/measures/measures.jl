@@ -43,6 +43,6 @@ function (meas::Wigner)(state::AbstractState)
 	return out
 end
 
-PhotonDetector(mode::Int;η=0.0,tol=1e-12) = PhotonDetector(mode,η,tol)
-Heralding(mode::Int;η=0.0,tol=1e-12) = Heralding(mode,η,tol)
-Heralding_noclick(mode::Int;η=0.0,tol=1e-12) = Heralding_noclick(mode,η,tol)
+PhotonDetector(mode::Int;η=1.0,tol=1e-12) = PhotonDetector(mode,η,tol)
+Heralding(mode::Int;η=1.0,tol=1e-12) = Heralding(mode,η,tol)
+Heralding_noclick(mode::Int;η=1.0,tol=1e-12) = Heralding_noclick(mode,η,tol)
