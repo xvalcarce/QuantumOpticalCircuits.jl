@@ -2,7 +2,7 @@ import QuantumOptics: sparse, create, destroy, tensor, ⊗, identityoperator, ex
 
 function p_noclick(state::FockState,mode::Int,η::Float64)
 	idd = identityoperator(state.dim)
-	noclick_op = sparse(sum([((-(1-η))^n*create(state.dim)^n*destroy(state.dim)^n)/factorial(n) for n in 0:state.dim.N]))
+    noclick_op = sparse(sum([((-η)^n*create(state.dim)^n*destroy(state.dim)^n)/factorial(n) for n in 0:state.dim.N]))
 	up = mode == 1 ? () : (idd for i in 1:(mode-1))
 	down = mode == state.n_mode ? () : (idd for i in 1:(state.n_mode-mode))
 	noclick_op_ = tensor(up...,noclick_op,down...)
@@ -12,7 +12,7 @@ end
 
 function p_noclick!(state::FockState,mode::Int,η::Float64)
 	idd = identityoperator(state.dim)
-	noclick_op = sparse(sum([((-(1-η))^n*create(state.dim)^n*destroy(state.dim)^n)/factorial(n) for n in 0:state.dim.N]))
+	noclick_op = sparse(sum([(((-η))^n*create(state.dim)^n*destroy(state.dim)^n)/factorial(n) for n in 0:state.dim.N]))
 	up = mode == 1 ? () : (idd for i in 1:(mode-1))
 	down = mode == state.n_mode ? () : (idd for i in 1:(state.n_mode-mode))
 	noclick_op_ = tensor(up...,noclick_op,down...)
@@ -25,9 +25,9 @@ function p_noclick!(state::FockState,mode::Int,η::Float64)
 	return p_nc
 end
 
-function p_click!(state::FockState,mode::Int,η::Float64)
+function p_click!(state::FockState,mode::Int,η::Float64,tol::Float64)
 	idd = identityoperator(state.dim)
-	noclick_op = sparse(sum([((-(1-η))^n*create(state.dim)^n*destroy(state.dim)^n)/factorial(n) for n in 0:state.dim.N]))
+    noclick_op = sparse(sum([((-η)^n*create(state.dim)^n*destroy(state.dim)^n)/factorial(n) for n in 0:state.dim.N]))
 	click_op = idd-noclick_op
 	up = mode == 1 ? () : (idd for i in 1:(mode-1))
 	down = mode == state.n_mode ? () : (idd for i in 1:(state.n_mode-mode))
@@ -35,6 +35,7 @@ function p_click!(state::FockState,mode::Int,η::Float64)
 	ρ_ = isa(state.ρ,Ket) ? state.ρ ⊗ dagger(state.ρ) : state.ρ
 	ρ_ = click_op_*ρ_*dagger(click_op_)
 	p_c = abs(real(tr(ρ_)))
+    @assert p_c > tol "Click probability below tolerance ($tol): $p_c"
 	ρ_ = normalize(ρ_)
 	state.ρ = ρ_
 	ptrace!(state,mode)
@@ -42,7 +43,7 @@ function p_click!(state::FockState,mode::Int,η::Float64)
 end
 
 herald_noclick!(state::FockState,mode::Int,η::Float64) = p_noclick!(state,mode,η)
-herald_click!(state::FockState,mode::Int,η::Float64,tol::Int) = round(p_click!(state,mode,η), digits=tol)
+herald_click!(state::FockState,mode::Int,η::Float64,tol::Float64) = p_click!(state,mode,η,tol)
 
 function E(state::FockState,k::Vector{Int},η::Float64)
 	idd = identityoperator(state.dim)
