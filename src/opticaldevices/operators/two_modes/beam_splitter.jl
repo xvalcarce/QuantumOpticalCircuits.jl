@@ -27,7 +27,7 @@ function mat(bs::BeamSplitter)
 end
 
 function mat(bs::BeamSplitter,dim::FockBasis)
-    x = tensor(create(dim),destroy(dim))+tensor(destroy(dim),create(dim))
+    x = tensor(create(dim),destroy(dim))-tensor(destroy(dim),create(dim))
     x *= bs.θ
     m = exp(dense(x))
     return m
