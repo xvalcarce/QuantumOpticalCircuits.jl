@@ -6,12 +6,11 @@ import PDMats: PDMat,det,inv
 
 function p_noclick(state::GaussianState,mode::Int,η::Float64)
 	d = state.d
-	#σ = PDMat(Symmetric(state.σ))
-    σ = state.σ
+	σ = PDMat(Symmetric(state.σ))
 	M = inv(σ)
 	F = spzeros(size(M)...)
 	F[2mode-1:2mode,2mode-1:2mode] = (4η/(2-η))*Matrix{Float64}(I,2,2)
-	M_F = PDMat(M+F)
+    M_F = PDMat(M+F)
 	p_nc = (2*√(det(M)))/((2-η)*√(det(M_F)))
 	p_nc *= exp(-.5*d'*(M-M*inv(M_F)*M)*d)
 	p_nc = real(p_nc)
