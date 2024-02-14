@@ -152,41 +152,42 @@ function correlator(state::PseudoGaussianState,i::Int,j::Int,η::Float64)
     return corr
 end
 
-function p_noclick(state::PseudoGaussianState,mode::Int,η::Float64)
+function p_noclick(state::PseudoGaussianState,mode::Int,η::Float64;err=14)
 	p_nc = 0.0
 	for (c_i,s) in zip(state.prob,state.states)
-		p_nc += c_i*p_noclick(s,mode,η)
+		p_nc_i = round(p_noclick(s,mode,η),digits=err)
+		p_nc += c_i*p_nc_i
 	end
 	p_nc *= state.norm
 	return p_nc
 end
 
-function p_noclick!(state::PseudoGaussianState,mode::Int,η::Float64)
+function p_noclick!(state::PseudoGaussianState,mode::Int,η::Float64;err=14)
 	p_nc = 0.0
-	for (idx,s) in enumerate(state.states)
-		p_nc += state.prob[idx]*p_noclick!(s,mode,η)
+	for (c_i,s) in zip(state.prob,state.states)
+		p_nc_i = round(p_noclick!(s,mode,η), digits=err)
+		p_nc += c_i*p_nc_i
 	end
 	p_nc *= state.norm
 	return p_nc
 end
 
-function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Float64)
+function herald_click!(state::PseudoGaussianState,mode::Int,η::Float64,tol::Float64;err=14)
 	p_c = 0
 	states = Vector{GaussianState}()
 	prob = Vector{Float64}()
 	n_composite_state = length(state.prob)
-	p_noclick(state,mode,η)
-	state.norm *= 1/(1-p_noclick(state,mode,η))
+	p_c = 1-p_noclick(state,mode,η)
+    @assert p_c > tol "Click probability below tolerance ($tol): $p_c"
 	for i in 1:n_composite_state
 		state_□ = copy(state.states[i])
 		ptrace!(state_□,mode)
 		p_nc = p_noclick!(state.states[i],mode,η)
-		p_c_i = 1-p_nc
-        @assert p_c_i > tol "Click probability below tolerance ($tol): $p_c_i"
-		p_c += p_c_i
+		p_nc = round(p_nc, digits=err)
 		append!(states,[state_□,state.states[i]])
 		append!(prob,state.prob[i]*[1.0,-p_nc])
 	end
+	state.norm *= inv(p_c)
 	state.prob = prob
 	state.states = states
 	return p_c
