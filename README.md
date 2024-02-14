@@ -14,7 +14,7 @@ pkg> add https://github.com/xvalcarce/QuantumOpticalCircuits.jl
 
 ## 👀 Overview
 
-`QuantumOpticalCircuits.jl` simulate quanutm optical circuits from 3 components: `States`, `OpticalDevices`, and `Measures`.  
+`QuantumOpticalCircuits.jl` simulate quantum optical circuits from 3 components: `States`, `OpticalDevices`, and `Measures`.  
 
 A `n`-mode state can be a `FockState(n,d)`, a `GaussianState(n)` or a `PseudoGaussianState(n)`. The first type uses the Fock representation where `d` is the maximum number of photons considered. The last two type uses a Gaussian representation. `PseudoGaussianState` allows for non-Gaussian operation such as heralding operations (this is done by allowing the state to be a linear combination of Gaussian states).
 
@@ -41,6 +41,14 @@ julia> FockState(2,5) |> SMS(0.42)(2) |> BS(π/4)(1,2) |> PhotonDetector(1,η=0.
 ```
 
 More example are available in the [examples](https://github.com/xvalcarce/QuantumOpticalCircuits.jl/tree/master/examples) folder.
+
+## 📰 White Paper
+
+Mathematical descriptions of the different optical devices and measurements are available in the Appendix A of [Phys. Rev. A 107, 062607](https://doi.org/10.1103/PhysRevA.107.062607) (alternatively [2209.06468](https://arxiv.org/abs/2209.06468)).
+
+This framework has been used in the following articles:
+
+- Automated design of quantum-optical experiments for device-independent quantum key distribution, [Phys. Rev. A 107, 062607](https://doi.org/10.1103/PhysRevA.107.062607)
 
 
 ## 🙏 Citation & Support
