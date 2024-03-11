@@ -1,4 +1,4 @@
-export PhotonDetector, Heralding, Heralding_noclick, Wigner
+export PhotonDetector, Heralding, Wigner
 
 include("measures_gaussian.jl")
 include("measures_fock.jl")
@@ -23,6 +23,12 @@ struct Heralding <: Measure
 	tol::Float64
 end
 
+struct HeraldingNoClick <: Measure
+	mode::Int
+	η::Float64
+	tol::Float64
+end
+
 struct Wigner <: Measure
 	α::Union{Vector{Float64},Vector{Vector{Float64}}}
 end
@@ -38,11 +44,16 @@ function (meas::Heralding)(state::AbstractState)
 	return state
 end
 
+function (meas::HeraldingNoClick)(state::AbstractState)
+	out = herald_noclick!(state,meas.mode,meas.η)
+    @assert out > meas.tol "NoClick probability below tolerance ($meas.tol): $out"
+	return state
+end
+
 function (meas::Wigner)(state::AbstractState)
 	out = wigner(state,meas.α)
 	return out
 end
 
 PhotonDetector(mode::Int;η=1.0,tol=1e-12) = PhotonDetector(mode,η,tol)
-Heralding(mode::Int;η=1.0,tol=1e-12) = Heralding(mode,η,tol)
-Heralding_noclick(mode::Int;η=1.0,tol=1e-12) = Heralding_noclick(mode,η,tol)
+Heralding(mode::Int;η=1.0,tol=1e-12,onclick=true) = onclick ? Heralding(mode,η,tol) : HeraldingNoClick(mode,η,tol)

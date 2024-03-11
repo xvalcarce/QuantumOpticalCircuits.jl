@@ -37,12 +37,11 @@ function p_noclick!(state::GaussianState,mode::Int,η::Float64)
 	return p_nc
 end
 
-function herald_click!(state::GaussianState,mode::Int,η::Float64)
-	throw(ArgumentError("Can not herald a GaussianState: the post-selected state is not Gaussian.\n
-						Try with a PseudoGaussianState or a PseudoGaussianCircuit"))
+function herald_click!(state::GaussianState,mode::Int,η::Float64,tol::Float64)
+	throw(ArgumentError("Can not herald a GaussianState on a click: the post-selected state is not Gaussian. Try with a PseudoGaussianState."))
 end
 
-herald_noclick!(state::GaussianState,mode::Int,η::Float64) = herald_click!(state,mode,η)
+herald_noclick!(state::GaussianState,mode::Int,η::Float64) = p_noclick!(state,mode,η)
 
 function o_(l::Vector{Int},η::Float64)
 	η_factor = (4η)/(2-η)
