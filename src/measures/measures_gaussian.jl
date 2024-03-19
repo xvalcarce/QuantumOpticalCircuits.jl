@@ -164,7 +164,7 @@ function p_noclick!(state::PseudoGaussianState,mode::Int,η::Float64;err=15)
 	p_nc = 0.0
 	for (c_i,s) in zip(state.prob,state.states)
 		p_nc_i = round(p_noclick!(s,mode,η), digits=err)
-		p_nc_i = p_noclick!(s,mode,η)
+		p_nc += c_i*p_nc_i
 	end
 	p_nc *= state.norm
 	return p_nc
